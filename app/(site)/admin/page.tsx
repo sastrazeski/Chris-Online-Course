@@ -69,7 +69,7 @@ export default async function AdminPage() {
           <Input name="title" label="Title" required />
           <Input name="slug" label="Slug" />
           <Field name="description" label="Description" />
-          <Input name="videoUrl" label="Embed video URL" />
+          <Input name="videoUrl" label="Video URL (YouTube, Google Drive, or MP4)" />
           <Input name="durationSeconds" label="Duration seconds" type="number" defaultValue="0" />
           <Input name="position" label="Position" type="number" defaultValue="0" />
           <label className="flex items-center gap-2 text-sm text-ink">
@@ -123,7 +123,7 @@ export default async function AdminPage() {
                             <Input name="slug" label="Slug" defaultValue={lesson.slug} required />
                             <Field name="description" label="Lesson content/notes" defaultValue={lesson.description ?? ""} />
                             <div className="space-y-3">
-                              <Input name="videoUrl" label="Video embed URL" defaultValue={lesson.video_url ?? ""} />
+                              <Input name="videoUrl" label="Video URL (YouTube, Google Drive, or MP4)" defaultValue={lesson.video_url ?? ""} />
                               <Input name="durationSeconds" label="Duration seconds" type="number" defaultValue={lesson.duration_seconds} />
                               <Input name="position" label="Position" type="number" defaultValue={lesson.position} />
                               <label className="flex items-center gap-2 text-sm text-ink">
