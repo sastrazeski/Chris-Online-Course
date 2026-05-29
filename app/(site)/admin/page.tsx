@@ -69,7 +69,6 @@ export default async function AdminPage() {
           <Input name="title" label="Title" required />
           <Input name="slug" label="Slug" />
           <Field name="description" label="Description" />
-          <Input name="videoUrl" label="Video URL (YouTube, Google Drive, or MP4)" />
           <Input name="durationSeconds" label="Duration seconds" type="number" defaultValue="0" />
           <Input name="position" label="Position" type="number" defaultValue="0" />
           <label className="flex items-center gap-2 text-sm text-ink">
@@ -84,7 +83,7 @@ export default async function AdminPage() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold text-ink">Manage courses</h2>
-            <p className="mt-1 text-sm text-muted">Edit sales copy, pricing, publish status, and lesson video URLs.</p>
+            <p className="mt-1 text-sm text-muted">Edit sales copy, pricing, publish status, and lesson videos.</p>
           </div>
           <span className="rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-ink">{adminCourses.length} courses</span>
         </div>
@@ -117,14 +116,13 @@ export default async function AdminPage() {
                       <h3 className="font-semibold text-ink">{module.title}</h3>
                       <div className="mt-3 space-y-3">
                         {module.lessons.map((lesson) => (
-                          <div key={lesson.id} className="space-y-3">
-                            <form action={updateLesson} className="grid gap-3 rounded-md border border-line bg-white p-3 lg:grid-cols-2">
+                          <div key={lesson.id} className="grid gap-3 rounded-md border border-line bg-white p-3 lg:grid-cols-[1fr_280px]">
+                            <form action={updateLesson} className="grid gap-3 lg:grid-cols-2">
                               <input type="hidden" name="lessonId" value={lesson.id} />
                               <Input name="title" label="Lesson title" defaultValue={lesson.title} required />
                               <Input name="slug" label="Slug" defaultValue={lesson.slug} required />
                               <Field name="description" label="Lesson content/notes" defaultValue={lesson.description ?? ""} />
                               <div className="space-y-3">
-                                <Input name="videoUrl" label="Video URL (YouTube, Google Drive, or MP4)" defaultValue={lesson.video_url ?? ""} />
                                 <Input name="durationSeconds" label="Duration seconds" type="number" defaultValue={lesson.duration_seconds} />
                                 <Input name="position" label="Position" type="number" defaultValue={lesson.position} />
                                 <label className="flex items-center gap-2 text-sm text-ink">
@@ -137,7 +135,7 @@ export default async function AdminPage() {
                             <form action={uploadLessonVideo} className="rounded-md border border-dashed border-line bg-gray-50 p-3">
                               <input type="hidden" name="lessonId" value={lesson.id} />
                               <label className="block text-sm font-medium text-ink">
-                                Upload lesson video
+                                Lesson video
                                 <input
                                   name="video"
                                   type="file"
@@ -146,9 +144,9 @@ export default async function AdminPage() {
                                   className="mt-2 block w-full rounded-md border border-line bg-white px-3 py-2 text-sm text-ink file:mr-3 file:rounded-md file:border-0 file:bg-brand-600 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-brand-700"
                                 />
                               </label>
-                              <p className="mt-2 text-xs text-muted">Uploads MP4/WebM/OGG to Supabase Storage and replaces this lesson video URL.</p>
+                              <p className="mt-2 text-xs text-muted">{lesson.video_url ? "Video uploaded. Choose a new file to replace it." : "Upload MP4, WebM, or OGG."}</p>
                               <button className="mt-3 h-10 w-full rounded-md bg-ink text-sm font-semibold text-white hover:bg-gray-800">
-                                Upload video file
+                                Upload video
                               </button>
                             </form>
                           </div>
