@@ -4,7 +4,10 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { throwReadableError } from "@/lib/errors";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+
+const lessonVideoBucket = "lesson-videos";
 
 function slugify(value: string) {
   return value
@@ -110,5 +113,48 @@ export async function updateLesson(formData: FormData) {
     .eq("id", lessonId);
 
   if (error) throwReadableError(error, "Failed to update lesson.");
+  revalidatePath("/admin");
+}
+
+export async function uploadLessonVideo(formData: FormData) {
+  await requireAdmin();
+  const supabase = createAdminClient();
+  const lessonId = String(formData.get("lessonId"));
+  const video = formData.get("video");
+
+  if (!(video instanceof File) || video.size === 0) {
+    throw new Error("Choose an MP4 video before uploading.");
+  }
+
+  if (!["video/mp4", "video/webm", "video/ogg"].includes(video.type)) {
+    throw new Error("Only MP4, WebM, or OGG videos are supported.");
+  }
+
+  const extension = video.name.split(".").pop()?.toLowerCase() || "mp4";
+  const safeName = slugify(video.name.replace(/\.[^.]+$/, ""));
+  const filePath = `${lessonId}/${Date.now()}-${safeName}.${extension}`;
+
+  const { data: bucket } = await supabase.storage.getBucket(lessonVideoBucket);
+  if (!bucket) {
+    const { error: bucketError } = await supabase.storage.createBucket(lessonVideoBucket, {
+      public: true,
+      allowedMimeTypes: ["video/mp4", "video/webm", "video/ogg"],
+      fileSizeLimit: 1024 * 1024 * 1024
+    });
+
+    if (bucketError) throwReadableError(bucketError, "Failed to create video storage bucket.");
+  }
+
+  const { error: uploadError } = await supabase.storage.from(lessonVideoBucket).upload(filePath, video, {
+    contentType: video.type,
+    upsert: true
+  });
+
+  if (uploadError) throwReadableError(uploadError, "Failed to upload video.");
+
+  const { data } = supabase.storage.from(lessonVideoBucket).getPublicUrl(filePath);
+  const { error } = await supabase.from("lessons").update({ video_url: data.publicUrl }).eq("id", lessonId);
+
+  if (error) throwReadableError(error, "Failed to attach video to lesson.");
   revalidatePath("/admin");
 }

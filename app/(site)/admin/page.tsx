@@ -1,7 +1,7 @@
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { CourseWithModules, ModuleRow } from "@/lib/supabase/types";
-import { createCourse, createLesson, createModule, updateCourse, updateLesson } from "./actions";
+import { createCourse, createLesson, createModule, updateCourse, updateLesson, uploadLessonVideo } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -117,22 +117,41 @@ export default async function AdminPage() {
                       <h3 className="font-semibold text-ink">{module.title}</h3>
                       <div className="mt-3 space-y-3">
                         {module.lessons.map((lesson) => (
-                          <form key={lesson.id} action={updateLesson} className="grid gap-3 rounded-md border border-line bg-white p-3 lg:grid-cols-2">
-                            <input type="hidden" name="lessonId" value={lesson.id} />
-                            <Input name="title" label="Lesson title" defaultValue={lesson.title} required />
-                            <Input name="slug" label="Slug" defaultValue={lesson.slug} required />
-                            <Field name="description" label="Lesson content/notes" defaultValue={lesson.description ?? ""} />
-                            <div className="space-y-3">
-                              <Input name="videoUrl" label="Video URL (YouTube, Google Drive, or MP4)" defaultValue={lesson.video_url ?? ""} />
-                              <Input name="durationSeconds" label="Duration seconds" type="number" defaultValue={lesson.duration_seconds} />
-                              <Input name="position" label="Position" type="number" defaultValue={lesson.position} />
-                              <label className="flex items-center gap-2 text-sm text-ink">
-                                <input name="isPreview" type="checkbox" defaultChecked={lesson.is_preview} className="h-4 w-4" />
-                                Free preview
+                          <div key={lesson.id} className="space-y-3">
+                            <form action={updateLesson} className="grid gap-3 rounded-md border border-line bg-white p-3 lg:grid-cols-2">
+                              <input type="hidden" name="lessonId" value={lesson.id} />
+                              <Input name="title" label="Lesson title" defaultValue={lesson.title} required />
+                              <Input name="slug" label="Slug" defaultValue={lesson.slug} required />
+                              <Field name="description" label="Lesson content/notes" defaultValue={lesson.description ?? ""} />
+                              <div className="space-y-3">
+                                <Input name="videoUrl" label="Video URL (YouTube, Google Drive, or MP4)" defaultValue={lesson.video_url ?? ""} />
+                                <Input name="durationSeconds" label="Duration seconds" type="number" defaultValue={lesson.duration_seconds} />
+                                <Input name="position" label="Position" type="number" defaultValue={lesson.position} />
+                                <label className="flex items-center gap-2 text-sm text-ink">
+                                  <input name="isPreview" type="checkbox" defaultChecked={lesson.is_preview} className="h-4 w-4" />
+                                  Free preview
+                                </label>
+                                <Submit>Save lesson</Submit>
+                              </div>
+                            </form>
+                            <form action={uploadLessonVideo} className="rounded-md border border-dashed border-line bg-gray-50 p-3">
+                              <input type="hidden" name="lessonId" value={lesson.id} />
+                              <label className="block text-sm font-medium text-ink">
+                                Upload lesson video
+                                <input
+                                  name="video"
+                                  type="file"
+                                  accept="video/mp4,video/webm,video/ogg"
+                                  required
+                                  className="mt-2 block w-full rounded-md border border-line bg-white px-3 py-2 text-sm text-ink file:mr-3 file:rounded-md file:border-0 file:bg-brand-600 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-brand-700"
+                                />
                               </label>
-                              <Submit>Save lesson</Submit>
-                            </div>
-                          </form>
+                              <p className="mt-2 text-xs text-muted">Uploads MP4/WebM/OGG to Supabase Storage and replaces this lesson video URL.</p>
+                              <button className="mt-3 h-10 w-full rounded-md bg-ink text-sm font-semibold text-white hover:bg-gray-800">
+                                Upload video file
+                              </button>
+                            </form>
+                          </div>
                         ))}
                       </div>
                     </div>
