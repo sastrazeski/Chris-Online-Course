@@ -5,8 +5,15 @@ import { createCourse, createLesson, createModule, updateCourse, updateLesson, u
 
 export const dynamic = "force-dynamic";
 
-export default async function AdminPage() {
+export default async function AdminPage({
+  searchParams
+}: {
+  searchParams: Promise<{ modules?: string; lessons?: string }>;
+}) {
   await requireAdmin();
+  const params = await searchParams;
+  const moduleLimit = parseDisplayLimit(params.modules, 1);
+  const lessonLimit = parseDisplayLimit(params.lessons, 1);
   const supabase = await createClient();
   const { data: courses } = await supabase
     .from("courses")
@@ -87,6 +94,13 @@ export default async function AdminPage() {
           </div>
           <span className="rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-ink">{adminCourses.length} courses</span>
         </div>
+        <form className="mt-4 flex flex-wrap items-end gap-3 rounded-md bg-gray-50 p-3">
+          <DisplayLimitSelect name="modules" label="Show modules" value={params.modules ?? "1"} />
+          <DisplayLimitSelect name="lessons" label="Show lessons per module" value={params.lessons ?? "1"} />
+          <button className="h-10 rounded-md bg-ink px-4 text-sm font-semibold text-white hover:bg-gray-800">
+            Apply
+          </button>
+        </form>
         <div className="mt-4 space-y-6">
           {adminCourses.map((course) => (
             <div key={course.id} className="rounded-lg border border-line p-4">
@@ -111,11 +125,16 @@ export default async function AdminPage() {
                   {course.modules.length} modules / {course.modules.flatMap((module) => module.lessons).length} lessons
                 </p>
                 <div className="mt-3 space-y-4">
-                  {course.modules.map((module) => (
+                  {course.modules.slice(0, moduleLimit).map((module) => (
                     <div key={module.id} className="rounded-md bg-gray-50 p-4">
-                      <h3 className="font-semibold text-ink">{module.title}</h3>
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <h3 className="font-semibold text-ink">{module.title}</h3>
+                        <span className="text-xs font-medium text-muted">
+                          Showing {Math.min(module.lessons.length, lessonLimit)} of {module.lessons.length} lessons
+                        </span>
+                      </div>
                       <div className="mt-3 space-y-3">
-                        {module.lessons.map((lesson) => (
+                        {module.lessons.slice(0, lessonLimit).map((lesson) => (
                           <div key={lesson.id} className="grid gap-3 rounded-md border border-line bg-white p-3 lg:grid-cols-[1fr_280px]">
                             <form action={updateLesson} className="grid gap-3 lg:grid-cols-2">
                               <input type="hidden" name="lessonId" value={lesson.id} />
@@ -198,4 +217,29 @@ function Select(props: React.SelectHTMLAttributes<HTMLSelectElement> & { label: 
 
 function Submit({ children }: { children: React.ReactNode }) {
   return <button className="h-10 w-full rounded-md bg-brand-600 text-sm font-semibold text-white hover:bg-brand-700">{children}</button>;
+}
+
+function DisplayLimitSelect({ name, label, value }: { name: string; label: string; value: string }) {
+  return (
+    <label className="block text-sm font-medium text-ink">
+      {label}
+      <select name={name} defaultValue={value} className="mt-2 h-10 rounded-md border border-line bg-white px-3 text-sm outline-none focus:border-brand-600">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option value="all">All</option>
+      </select>
+    </label>
+  );
+}
+
+function parseDisplayLimit(value: string | undefined, fallback: number) {
+  if (value === "all") return Number.MAX_SAFE_INTEGER;
+
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed < 1) return fallback;
+
+  return Math.min(Math.floor(parsed), 50);
 }
