@@ -90,12 +90,25 @@ create table public.client_brands (
   updated_at timestamptz not null default now()
 );
 
+create table public.pending_registrations (
+  email text primary key,
+  full_name text not null,
+  encrypted_password text not null,
+  otp_hash text not null,
+  otp_expires_at timestamptz not null,
+  attempts integer not null default 0,
+  last_sent_at timestamptz not null default now(),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create index courses_published_idx on public.courses (is_published, slug);
 create index modules_course_position_idx on public.modules (course_id, position);
 create index lessons_module_position_idx on public.lessons (module_id, position);
 create index enrollments_user_idx on public.enrollments (user_id);
 create index orders_midtrans_idx on public.orders (midtrans_order_id);
 create index client_brands_active_position_idx on public.client_brands (is_active, position);
+create index pending_registrations_expires_idx on public.pending_registrations (otp_expires_at);
 
 create or replace function public.touch_updated_at()
 returns trigger
@@ -117,6 +130,10 @@ for each row execute function public.touch_updated_at();
 
 create trigger client_brands_touch_updated_at
 before update on public.client_brands
+for each row execute function public.touch_updated_at();
+
+create trigger pending_registrations_touch_updated_at
+before update on public.pending_registrations
 for each row execute function public.touch_updated_at();
 
 create or replace function public.create_profile_for_new_user()
@@ -176,6 +193,7 @@ alter table public.enrollments enable row level security;
 alter table public.lesson_progress enable row level security;
 alter table public.orders enable row level security;
 alter table public.client_brands enable row level security;
+alter table public.pending_registrations enable row level security;
 
 create policy "Users can read their own profile"
 on public.profiles for select

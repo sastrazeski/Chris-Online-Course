@@ -6,7 +6,7 @@ import { signIn } from "../actions";
 export default async function SignInPage({
   searchParams
 }: {
-  searchParams: Promise<{ error?: string; next?: string }>;
+  searchParams: Promise<{ error?: string; message?: string; next?: string }>;
 }) {
   const params = await searchParams;
 
@@ -19,13 +19,14 @@ export default async function SignInPage({
               <BookOpen className="h-6 w-6" />
             </div>
             <h1 className="text-3xl font-semibold tracking-tight text-ink">Sign in</h1>
-            <p className="mt-2 text-sm leading-6 text-muted">Access your courses and continue learning.</p>
+            <p className="mt-2 text-sm leading-6 text-muted">Masuk setelah email kamu selesai diverifikasi.</p>
           </div>
           <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
             <LogIn className="h-3.5 w-3.5" />
             Login
           </span>
         </div>
+        {params.message ? <p className="rounded-md bg-emerald-50 p-3 text-sm text-emerald-700">{params.message}</p> : null}
         {params.error ? <p className="rounded-md bg-red-50 p-3 text-sm text-red-700">{params.error}</p> : null}
         <input type="hidden" name="next" value={params.next ?? "/dashboard"} />
         <label className="block text-sm font-medium text-ink">
@@ -49,6 +50,12 @@ export default async function SignInPage({
           No account?{" "}
           <Link href="/auth/sign-up" className="font-semibold text-brand-700">
             Create one
+          </Link>
+        </p>
+        <p className="text-center text-xs leading-5 text-muted">
+          Punya kode verifikasi?{" "}
+          <Link href="/auth/verify" className="font-semibold text-brand-700">
+            Verifikasi email
           </Link>
         </p>
       </form>

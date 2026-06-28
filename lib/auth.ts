@@ -21,6 +21,11 @@ export async function requireUser() {
   if (!user) {
     redirect("/auth/sign-in");
   }
+
+  if (!user.email_confirmed_at) {
+    redirect(`/auth/verify?email=${encodeURIComponent(user.email ?? "")}&message=${encodeURIComponent("Verifikasi email dulu sebelum membuka halaman ini.")}`);
+  }
+
   return user;
 }
 

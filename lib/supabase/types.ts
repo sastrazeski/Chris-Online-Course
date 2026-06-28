@@ -263,6 +263,40 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["client_brands"]["Insert"]>;
         Relationships: [];
       };
+      pending_registrations: {
+        Row: {
+          email: string;
+          full_name: string;
+          encrypted_password: string;
+          otp_hash: string;
+          otp_expires_at: string;
+          attempts: number;
+          last_sent_at: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          email: string;
+          full_name: string;
+          encrypted_password: string;
+          otp_hash: string;
+          otp_expires_at: string;
+          attempts?: number;
+          last_sent_at?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          full_name?: string;
+          encrypted_password?: string;
+          otp_hash?: string;
+          otp_expires_at?: string;
+          attempts?: number;
+          last_sent_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {

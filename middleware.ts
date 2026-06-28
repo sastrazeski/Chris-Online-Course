@@ -48,6 +48,16 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
+  if (isProtectedRoute && user && !user.email_confirmed_at) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = "/auth/verify";
+    if (user.email) {
+      redirectUrl.searchParams.set("email", user.email);
+    }
+    redirectUrl.searchParams.set("message", "Verifikasi email dulu sebelum membuka halaman ini.");
+    return NextResponse.redirect(redirectUrl);
+  }
+
   return response;
 }
 

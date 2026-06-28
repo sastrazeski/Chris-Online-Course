@@ -5,6 +5,7 @@ import { signUp } from "../actions";
 
 export default async function SignUpPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
   const params = await searchParams;
+  const errorMessage = formatSignUpError(params.error);
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-[radial-gradient(circle_at_top_left,#dcfce7_0,transparent_34%),linear-gradient(135deg,#f8fafc_0%,#eef2ff_100%)] px-4 py-12">
@@ -15,14 +16,14 @@ export default async function SignUpPage({ searchParams }: { searchParams: Promi
               <BookOpen className="h-6 w-6" />
             </div>
             <h1 className="text-3xl font-semibold tracking-tight text-ink">Create account</h1>
-            <p className="mt-2 text-sm leading-6 text-muted">Buy courses and save progress across lessons.</p>
+            <p className="mt-2 text-sm leading-6 text-muted">Daftar dengan email aktif, lalu masukkan kode verifikasi.</p>
           </div>
           <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
             <Sparkles className="h-3.5 w-3.5" />
             Student
           </span>
         </div>
-        {params.error ? <p className="rounded-md bg-red-50 p-3 text-sm text-red-700">{params.error}</p> : null}
+        {errorMessage ? <p className="rounded-md bg-red-50 p-3 text-sm text-red-700">{errorMessage}</p> : null}
         <label className="block text-sm font-medium text-ink">
           Full name
           <input
@@ -55,7 +56,23 @@ export default async function SignUpPage({ searchParams }: { searchParams: Promi
             Sign in
           </Link>
         </p>
+        <p className="text-center text-xs leading-5 text-muted">
+          Belum menerima kode?{" "}
+          <Link href="/auth/verify" className="font-semibold text-brand-700">
+            Buka halaman verifikasi
+          </Link>
+        </p>
       </form>
     </main>
   );
+}
+
+function formatSignUpError(error?: string) {
+  if (!error) return null;
+
+  if (error === "{}" || error === "[object Object]") {
+    return "Email verifikasi gagal dikirim lewat Brevo API. Cek BREVO_API_KEY, BREVO_SENDER_EMAIL, dan pastikan sender sudah terverifikasi di Brevo.";
+  }
+
+  return error;
 }
