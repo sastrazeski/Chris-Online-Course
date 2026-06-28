@@ -6,9 +6,18 @@
   color-scheme: light;
 }
 
+:root.dark {
+  color-scheme: dark;
+}
+
 body {
   background: #f8fafc;
-  color: #101828;
+  color: #0b1020;
+}
+
+.dark body {
+  background: #111827;
+  color: #e5e7eb;
 }
 
 input,

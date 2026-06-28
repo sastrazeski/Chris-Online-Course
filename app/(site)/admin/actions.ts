@@ -8,6 +8,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 const lessonVideoBucket = "lesson-videos";
+const courseImageBucket = "course-images";
 
 function slugify(value: string) {
   return value
@@ -20,13 +21,15 @@ function slugify(value: string) {
 export async function createCourse(formData: FormData) {
   const user = await requireAdmin();
   const supabase = await createClient();
+  const adminSupabase = createAdminClient();
   const title = String(formData.get("title"));
+  const coverImageUrl = await uploadCourseImage(adminSupabase, formData.get("coverImage"));
 
   const { error } = await supabase.from("courses").insert({
     title,
     slug: slugify(String(formData.get("slug") || title)),
     description: String(formData.get("description")),
-    cover_image_url: String(formData.get("coverImageUrl") || "") || null,
+    cover_image_url: coverImageUrl,
     price: Number(formData.get("price")),
     currency: "IDR",
     is_published: formData.get("isPublished") === "on",
@@ -73,24 +76,64 @@ export async function createLesson(formData: FormData) {
 export async function updateCourse(formData: FormData) {
   await requireAdmin();
   const supabase = await createClient();
+  const adminSupabase = createAdminClient();
   const courseId = String(formData.get("courseId"));
   const title = String(formData.get("title"));
+  const coverImageUrl = await uploadCourseImage(adminSupabase, formData.get("coverImage"), courseId);
+  const updates = {
+    title,
+    slug: slugify(String(formData.get("slug") || title)),
+    description: String(formData.get("description")),
+    price: Number(formData.get("price")),
+    is_published: formData.get("isPublished") === "on",
+    ...(coverImageUrl ? { cover_image_url: coverImageUrl } : {})
+  };
 
   const { error } = await supabase
     .from("courses")
-    .update({
-      title,
-      slug: slugify(String(formData.get("slug") || title)),
-      description: String(formData.get("description")),
-      cover_image_url: String(formData.get("coverImageUrl") || "") || null,
-      price: Number(formData.get("price")),
-      is_published: formData.get("isPublished") === "on"
-    })
+    .update(updates)
     .eq("id", courseId);
 
   if (error) throwReadableError(error, "Failed to update course.");
   revalidatePath("/admin");
   revalidatePath("/courses");
+}
+
+async function uploadCourseImage(
+  supabase: ReturnType<typeof createAdminClient>,
+  image: FormDataEntryValue | null,
+  courseId = "new"
+) {
+  if (!(image instanceof File) || image.size === 0) return null;
+
+  if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(image.type)) {
+    throw new Error("Only JPG, PNG, WebP, or GIF images are supported.");
+  }
+
+  const extension = image.name.split(".").pop()?.toLowerCase() || "jpg";
+  const safeName = slugify(image.name.replace(/\.[^.]+$/, ""));
+  const filePath = `${courseId}/${Date.now()}-${safeName}.${extension}`;
+
+  const { data: bucket } = await supabase.storage.getBucket(courseImageBucket);
+  if (!bucket) {
+    const { error: bucketError } = await supabase.storage.createBucket(courseImageBucket, {
+      public: true,
+      allowedMimeTypes: ["image/jpeg", "image/png", "image/webp", "image/gif"],
+      fileSizeLimit: 10 * 1024 * 1024
+    });
+
+    if (bucketError) throwReadableError(bucketError, "Failed to create image storage bucket.");
+  }
+
+  const { error: uploadError } = await supabase.storage.from(courseImageBucket).upload(filePath, image, {
+    contentType: image.type,
+    upsert: true
+  });
+
+  if (uploadError) throwReadableError(uploadError, "Failed to upload course image.");
+
+  const { data } = supabase.storage.from(courseImageBucket).getPublicUrl(filePath);
+  return data.publicUrl;
 }
 
 export async function updateLesson(formData: FormData) {
