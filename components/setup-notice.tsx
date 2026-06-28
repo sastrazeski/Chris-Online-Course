@@ -10,7 +10,8 @@ export function SetupNotice() {
           <p className="mt-2 text-sm leading-6">
             Buat file <code className="rounded bg-white px-1 py-0.5">.env.local</code> di root project, isi
             <code className="mx-1 rounded bg-white px-1 py-0.5">NEXT_PUBLIC_SUPABASE_URL</code> dan
-            <code className="mx-1 rounded bg-white px-1 py-0.5">NEXT_PUBLIC_SUPABASE_ANON_KEY</code>, lalu restart
+            <code className="mx-1 rounded bg-white px-1 py-0.5">NEXT_PUBLIC_SUPABASE_ANON_KEY</code> atau
+            <code className="mx-1 rounded bg-white px-1 py-0.5">NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY</code>, lalu restart
             <code className="ml-1 rounded bg-white px-1 py-0.5">npm run dev</code>.
           </p>
         </div>

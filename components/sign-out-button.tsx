@@ -18,7 +18,7 @@ export function SignOutButton() {
   return (
     <Button type="button" variant="ghost" onClick={signOut} className="gap-2">
       <LogOut className="h-4 w-4" />
-      Sign out
+      Keluar
     </Button>
   );
 }

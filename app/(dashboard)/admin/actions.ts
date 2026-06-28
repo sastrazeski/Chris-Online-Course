@@ -6,6 +6,7 @@ import { requireAdmin } from "@/lib/auth";
 import { throwReadableError } from "@/lib/errors";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { createProtectedVideoUrl } from "@/lib/video-security";
 
 const lessonVideoBucket = "lesson-videos";
 const courseImageBucket = "course-images";
@@ -180,7 +181,7 @@ export async function uploadLessonVideo(formData: FormData) {
   const { data: bucket } = await supabase.storage.getBucket(lessonVideoBucket);
   if (!bucket) {
     const { error: bucketError } = await supabase.storage.createBucket(lessonVideoBucket, {
-      public: true,
+      public: false,
       allowedMimeTypes: ["video/mp4", "video/webm", "video/ogg"],
       fileSizeLimit: 1024 * 1024 * 1024
     });
@@ -195,8 +196,10 @@ export async function uploadLessonVideo(formData: FormData) {
 
   if (uploadError) throwReadableError(uploadError, "Failed to upload video.");
 
-  const { data } = supabase.storage.from(lessonVideoBucket).getPublicUrl(filePath);
-  const { error } = await supabase.from("lessons").update({ video_url: data.publicUrl }).eq("id", lessonId);
+  const { error } = await supabase
+    .from("lessons")
+    .update({ video_url: createProtectedVideoUrl(lessonVideoBucket, filePath) })
+    .eq("id", lessonId);
 
   if (error) throwReadableError(error, "Failed to attach video to lesson.");
   revalidatePath("/admin");

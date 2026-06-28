@@ -8,20 +8,20 @@ export type Database = {
           id: string;
           full_name: string | null;
           avatar_url: string | null;
-          role: "student" | "admin";
+          role: "student" | "teacher" | "admin" | "developer";
           created_at: string;
         };
         Insert: {
           id: string;
           full_name?: string | null;
           avatar_url?: string | null;
-          role?: "student" | "admin";
+          role?: "student" | "teacher" | "admin" | "developer";
           created_at?: string;
         };
         Update: {
           full_name?: string | null;
           avatar_url?: string | null;
-          role?: "student" | "admin";
+          role?: "student" | "teacher" | "admin" | "developer";
         };
         Relationships: [];
       };
@@ -243,6 +243,26 @@ export type Database = {
           }
         ];
       };
+      client_brands: {
+        Row: {
+          id: string;
+          name: string;
+          is_active: boolean;
+          position: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          is_active?: boolean;
+          position?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["client_brands"]["Insert"]>;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -258,7 +278,7 @@ export type Database = {
       };
     };
     Enums: {
-      user_role: "student" | "admin";
+      user_role: "student" | "teacher" | "admin" | "developer";
       enrollment_status: "active" | "refunded" | "cancelled";
       order_status: "pending" | "paid" | "failed" | "expired" | "cancelled";
     };
@@ -277,6 +297,8 @@ export type CourseWithModules = Database["public"]["Tables"]["courses"]["Row"] &
 export type CourseRow = Database["public"]["Tables"]["courses"]["Row"];
 export type ModuleRow = Database["public"]["Tables"]["modules"]["Row"];
 export type LessonRow = Database["public"]["Tables"]["lessons"]["Row"];
+export type ClientBrandRow = Database["public"]["Tables"]["client_brands"]["Row"];
+export type UserRole = Database["public"]["Enums"]["user_role"];
 
 export type EnrollmentWithCourse = Database["public"]["Tables"]["enrollments"]["Row"] & {
   courses: CourseWithModules;

@@ -1,9 +1,9 @@
 import { createServerClient } from "@supabase/ssr";
 import { type NextRequest, NextResponse } from "next/server";
-import { isSupabaseConfigured } from "./lib/env";
+import { getSupabasePublicKey, getSupabaseUrl, isSupabaseConfigured } from "./lib/env";
 import type { Database } from "./lib/supabase/types";
 
-const protectedPrefixes = ["/dashboard", "/learn", "/admin", "/checkout"];
+const protectedPrefixes = ["/dashboard", "/learn", "/admin", "/checkout", "/account", "/settings", "/developer"];
 
 export async function middleware(request: NextRequest) {
   if (!isSupabaseConfigured()) {
@@ -20,8 +20,8 @@ export async function middleware(request: NextRequest) {
   };
 
   const supabase = createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    getSupabaseUrl()!,
+    getSupabasePublicKey()!,
     {
       cookies: {
         getAll() {

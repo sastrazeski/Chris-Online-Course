@@ -4,6 +4,7 @@ import { ProgressToggle } from "@/components/progress-toggle";
 import { VideoPlayer } from "@/components/video-player";
 import { requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { getPlayableVideoUrl } from "@/lib/video-security";
 import type { CourseWithModules, LessonRow } from "@/lib/supabase/types";
 
 export const dynamic = "force-dynamic";
@@ -53,11 +54,13 @@ export default async function LessonPage({
     .eq("lesson_id", lesson.id)
     .eq("user_id", user.id)
     .maybeSingle();
+  const videoSrc = await getPlayableVideoUrl(lesson.video_url);
+  const watermark = `${user.email ?? user.id} | ${new Date().toISOString().slice(0, 10)}`;
 
   return (
     <div className="mx-auto grid max-w-7xl gap-8 px-4 py-8 lg:grid-cols-[1fr_340px]">
       <section>
-        <VideoPlayer src={lesson.video_url} title={lesson.title} />
+        <VideoPlayer src={videoSrc} title={lesson.title} watermark={watermark} />
         <div className="mt-6 flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-sm font-semibold uppercase tracking-wide text-brand-700">{lesson.moduleTitle}</p>

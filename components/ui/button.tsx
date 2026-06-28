@@ -23,6 +23,7 @@ export function Button({ className, variant = "primary", ...props }: ButtonProps
     <button
       className={cn(
         "inline-flex h-10 items-center justify-center rounded-md px-4 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60",
+        "whitespace-nowrap",
         variants[variant],
         className
       )}
@@ -36,6 +37,7 @@ export function LinkButton({ className, variant = "primary", ...props }: LinkBut
     <Link
       className={cn(
         "inline-flex h-10 items-center justify-center rounded-md px-4 text-sm font-semibold transition",
+        "whitespace-nowrap",
         variants[variant],
         className
       )}

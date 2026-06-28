@@ -1,6 +1,6 @@
 create extension if not exists "pgcrypto";
 
-create type public.user_role as enum ('student', 'admin');
+create type public.user_role as enum ('student', 'teacher', 'admin', 'developer');
 create type public.enrollment_status as enum ('active', 'refunded', 'cancelled');
 create type public.order_status as enum ('pending', 'paid', 'failed', 'expired', 'cancelled');
 
@@ -81,11 +81,21 @@ create table public.orders (
   updated_at timestamptz not null default now()
 );
 
+create table public.client_brands (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  is_active boolean not null default true,
+  position integer not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create index courses_published_idx on public.courses (is_published, slug);
 create index modules_course_position_idx on public.modules (course_id, position);
 create index lessons_module_position_idx on public.lessons (module_id, position);
 create index enrollments_user_idx on public.enrollments (user_id);
 create index orders_midtrans_idx on public.orders (midtrans_order_id);
+create index client_brands_active_position_idx on public.client_brands (is_active, position);
 
 create or replace function public.touch_updated_at()
 returns trigger
@@ -103,6 +113,10 @@ for each row execute function public.touch_updated_at();
 
 create trigger orders_touch_updated_at
 before update on public.orders
+for each row execute function public.touch_updated_at();
+
+create trigger client_brands_touch_updated_at
+before update on public.client_brands
 for each row execute function public.touch_updated_at();
 
 create or replace function public.create_profile_for_new_user()
@@ -135,7 +149,7 @@ set search_path = public
 as $$
   select exists (
     select 1 from public.profiles
-    where id = auth.uid() and role = 'admin'
+    where id = auth.uid() and role in ('admin', 'developer')
   );
 $$;
 
@@ -161,6 +175,7 @@ alter table public.lessons enable row level security;
 alter table public.enrollments enable row level security;
 alter table public.lesson_progress enable row level security;
 alter table public.orders enable row level security;
+alter table public.client_brands enable row level security;
 
 create policy "Users can read their own profile"
 on public.profiles for select
@@ -248,5 +263,14 @@ with check (user_id = auth.uid() and status = 'pending');
 
 create policy "Admins manage orders"
 on public.orders for all
+using (public.is_admin())
+with check (public.is_admin());
+
+create policy "Anyone can read active client brands"
+on public.client_brands for select
+using (is_active = true or public.is_admin());
+
+create policy "Admins manage client brands"
+on public.client_brands for all
 using (public.is_admin())
 with check (public.is_admin());
