@@ -19,7 +19,7 @@ export async function getCurrentUser() {
 export async function requireUser() {
   const user = await getCurrentUser();
   if (!user) {
-    redirect("/auth/sign-in");
+    redirect("/login");
   }
 
   if (!user.email_confirmed_at) {
@@ -41,6 +41,28 @@ export async function requireAdmin() {
   return user;
 }
 
+export async function requireProfileRole() {
+  const user = await requireUser();
+  const supabase = await createClient();
+  const { data: profile } = await supabase.from("profiles").select("role, full_name").eq("id", user.id).single();
+
+  return {
+    user,
+    role: profile?.role ?? "student",
+    fullName: profile?.full_name ?? null
+  };
+}
+
+export async function requireTeacherDashboardUser() {
+  const profile = await requireProfileRole();
+
+  if (!isTeachingRole(profile.role) && !isAdminRole(profile.role)) {
+    redirect("/dashboard");
+  }
+
+  return profile;
+}
+
 export async function requireDeveloper() {
   const user = await requireUser();
   const supabase = await createClient();
@@ -55,4 +77,8 @@ export async function requireDeveloper() {
 
 export function isAdminRole(role?: UserRole | null) {
   return role === "admin" || role === "developer";
+}
+
+export function isTeachingRole(role?: UserRole | null) {
+  return role === "teacher" || role === "instructor";
 }

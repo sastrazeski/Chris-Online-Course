@@ -196,6 +196,7 @@ function formatRole(role: UserRole) {
   const labels: Record<UserRole, string> = {
     student: "Siswa",
     teacher: "Pengajar",
+    instructor: "Instructor",
     admin: "Admin",
     developer: "Developer"
   };

@@ -1,10 +1,11 @@
 import { redirect } from "next/navigation";
 import { requireUser } from "@/lib/auth";
-import { throwReadableError } from "@/lib/errors";
-import { createSnapTransaction, buildSnapPayload } from "@/lib/midtrans";
+import { getMidtransClientKey, isMidtransConfigured } from "@/lib/env";
+import { getSnapScriptUrl } from "@/lib/midtrans";
 import { createClient } from "@/lib/supabase/server";
 import { LinkButton } from "@/components/ui/button";
 import { formatPrice } from "@/lib/utils";
+import { MidtransPayButton } from "@/components/midtrans-pay-button";
 
 export const dynamic = "force-dynamic";
 
@@ -26,42 +27,31 @@ export default async function CheckoutPage({ params }: { params: Promise<{ cours
 
   if (enrollment) redirect(`/courses/${course.slug}`);
 
-  const midtransOrderId = `COURSE-${course.id.slice(0, 8)}-${Date.now()}`;
-  const { error } = await supabase.from("orders").insert({
-    user_id: user.id,
-    course_id: course.id,
-    amount: course.price,
-    currency: course.currency,
-    midtrans_order_id: midtransOrderId
-  });
-
-  if (error) {
-    throwReadableError(error, "Failed to create order.");
-  }
-
-  const transaction = await createSnapTransaction(
-    buildSnapPayload({
-      orderId: midtransOrderId,
-      amount: course.price,
-      courseId: course.id,
-      courseTitle: course.title,
-      userEmail: user.email,
-      userName: user.user_metadata.full_name
-    })
-  );
+  const midtransConfigured = isMidtransConfigured();
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-12">
       <div className="rounded-lg border border-line bg-white p-6 shadow-panel">
         <h1 className="text-2xl font-semibold text-ink">Checkout</h1>
-        <p className="mt-2 text-muted">Complete payment in Midtrans to unlock this course.</p>
+        <p className="mt-2 text-muted">Selesaikan pembayaran via Midtrans untuk membuka akses course ini.</p>
         <div className="mt-6 rounded-md bg-gray-50 p-4">
           <h2 className="font-semibold text-ink">{course.title}</h2>
-          <p className="mt-1 text-sm text-muted">Order: {midtransOrderId}</p>
           <p className="mt-3 text-xl font-semibold text-ink">{formatPrice(course.price, course.currency)}</p>
         </div>
+        {!midtransConfigured ? (
+          <div className="mt-5 rounded-md border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-950">
+            Midtrans belum dikonfigurasi. Isi MIDTRANS_SERVER_KEY dan MIDTRANS_CLIENT_KEY di environment.
+          </div>
+        ) : null}
         <div className="mt-6 flex flex-wrap gap-3">
-          <LinkButton href={transaction.redirect_url}>Pay with Midtrans</LinkButton>
+          <div className="w-full sm:w-auto sm:min-w-56">
+            <MidtransPayButton
+              courseId={course.id}
+              clientKey={getMidtransClientKey()}
+              snapScriptUrl={getSnapScriptUrl()}
+              disabled={!midtransConfigured}
+            />
+          </div>
           <LinkButton href={`/courses/${course.slug}`} variant="secondary">
             Back to course
           </LinkButton>

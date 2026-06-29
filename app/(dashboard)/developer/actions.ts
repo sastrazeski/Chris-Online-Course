@@ -5,7 +5,7 @@ import { requireDeveloper } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { UserRole } from "@/lib/supabase/types";
 
-const allowedRoles: UserRole[] = ["student", "teacher", "admin", "developer"];
+const allowedRoles: UserRole[] = ["student", "teacher", "instructor", "admin", "developer"];
 
 export async function updateUserRole(formData: FormData) {
   const developer = await requireDeveloper();

@@ -42,6 +42,10 @@ export async function POST(request: Request) {
     .select("*")
     .single();
 
+  if ((error || !order) && payload.order_id.startsWith("SUB-")) {
+    return NextResponse.json({ received: true, subscription: true });
+  }
+
   if (error || !order) {
     return NextResponse.json({ error: "Order not found" }, { status: 404 });
   }

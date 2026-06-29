@@ -9,6 +9,7 @@ export const dynamic = "force-dynamic";
 const roleOptions: Array<{ value: UserRole; label: string }> = [
   { value: "student", label: "Siswa" },
   { value: "teacher", label: "Pengajar" },
+  { value: "instructor", label: "Instructor" },
   { value: "admin", label: "Admin" },
   { value: "developer", label: "Developer" }
 ];
@@ -125,6 +126,7 @@ function formatRole(role: UserRole) {
   const labels: Record<UserRole, string> = {
     student: "Siswa",
     teacher: "Pengajar",
+    instructor: "Instructor",
     admin: "Admin",
     developer: "Developer"
   };

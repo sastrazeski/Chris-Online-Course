@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { decryptPendingPassword, encryptPendingPassword, generateOtp, hashOtp, sendVerificationEmail } from "@/lib/custom-email-otp";
+import { isTeachingRole } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -19,11 +20,12 @@ export async function signIn(formData: FormData) {
       redirect(`/auth/verify?email=${encodeURIComponent(email)}&message=${encodeURIComponent("Cek email kamu dan masukkan kode verifikasi sebelum login.")}`);
     }
 
-    redirect(`/auth/sign-in?error=${encodeURIComponent(message)}`);
+    redirect(`/login?error=${encodeURIComponent(message)}`);
   }
 
+  const redirectPath = await resolvePostLoginPath(supabase, next);
   revalidatePath("/", "layout");
-  redirect(next);
+  redirect(redirectPath);
 }
 
 export async function signUp(formData: FormData) {
@@ -234,4 +236,25 @@ function getAuthErrorMessage(error: unknown, context: "signin" | "signup" | "ver
   }
 
   return "Terjadi masalah pada proses auth. Cek konfigurasi Supabase Email Provider dan SMTP, lalu coba lagi.";
+}
+
+async function resolvePostLoginPath(supabase: Awaited<ReturnType<typeof createClient>>, next: string) {
+  const {
+    data: { user }
+  } = await supabase.auth.getUser();
+
+  if (!user) return next;
+
+  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+  const role = profile?.role ?? "student";
+
+  if (isTeachingRole(role) && (next === "/dashboard" || next.startsWith("/dashboard/"))) {
+    return "/teacher/dashboard";
+  }
+
+  if (role === "student" && next.startsWith("/teacher/dashboard")) {
+    return "/dashboard";
+  }
+
+  return next;
 }

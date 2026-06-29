@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { BookOpen, LayoutDashboard, Mail, Shield, UserCircle } from "lucide-react";
-import { requireUser } from "@/lib/auth";
+import { isTeachingRole, requireUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { LinkButton } from "@/components/ui/button";
 import type { UserRole } from "@/lib/supabase/types";
@@ -56,7 +56,7 @@ export default async function AccountPage() {
       <section className="mt-6 rounded-lg border border-line bg-white p-5 shadow-panel dark:border-white/10 dark:bg-white/5">
         <h2 className="font-semibold text-ink dark:text-slate-100">Akses akun</h2>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <LinkButton href="/dashboard" className="gap-2">
+          <LinkButton href={isTeachingRole(role) ? "/teacher/dashboard" : "/dashboard"} className="gap-2">
             <LayoutDashboard className="h-4 w-4" />
             Dashboard
           </LinkButton>
@@ -107,6 +107,7 @@ function formatRole(role: UserRole) {
   const labels: Record<UserRole, string> = {
     student: "Siswa",
     teacher: "Pengajar",
+    instructor: "Instructor",
     admin: "Admin",
     developer: "Developer"
   };

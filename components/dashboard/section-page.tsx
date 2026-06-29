@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Award, BookOpen, CalendarClock, CheckCircle2, CreditCard, Heart, Lock, MessageCircle, PlayCircle, ShoppingBag, Sparkles, Users, Video } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { SubscribeButton } from "./subscribe-provider";
 
 type SectionKey =
   | "online-course"
@@ -21,7 +22,7 @@ const sections: Record<
     description: string;
     icon: LucideIcon;
     action?: { label: string; href: string };
-    cards: Array<{ title: string; description: string; meta?: string; icon: LucideIcon; locked?: boolean }>;
+    cards: Array<{ title: string; description: string; meta?: string; icon: LucideIcon; locked?: boolean; plan?: "monthly" | "yearly" }>;
   }
 > = {
   "online-course": {
@@ -119,9 +120,9 @@ const sections: Record<
     description: "Kelola paket premium, akses kelas, dan status subscription.",
     icon: CreditCard,
     cards: [
-      { title: "Monthly", description: "Akses semua kelas premium dan materi eksklusif.", meta: "Rp99.000 / bulan", icon: CreditCard },
-      { title: "Yearly", description: "Paket tahunan dengan value terbaik untuk member aktif.", meta: "Rp799.000 / tahun", icon: CreditCard },
-      { title: "Benefit Premium", description: "Materi premium, sesi mentor group, dan sertifikat kelulusan.", meta: "Upgrade", icon: Sparkles }
+      { title: "Monthly", description: "Akses semua kelas premium dan materi eksklusif.", meta: "Rp99.000 / bulan", icon: CreditCard, plan: "monthly" },
+      { title: "Yearly", description: "Paket tahunan dengan value terbaik untuk member aktif.", meta: "Rp799.000 / tahun", icon: CreditCard, plan: "yearly" },
+      { title: "Benefit Premium", description: "Materi premium, sesi mentor group, dan sertifikat kelulusan.", meta: "Upgrade", icon: Sparkles, plan: "yearly" }
     ]
   }
 };
@@ -153,9 +154,8 @@ export function DashboardSectionPage({ section }: { section: SectionKey }) {
       <section className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         {data.cards.map((card) => {
           const CardIcon = card.icon;
-
-          return (
-            <article key={card.title} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-900/5 dark:border-white/10 dark:bg-white/5">
+          const content = (
+            <>
               <div className="flex items-start justify-between gap-4">
                 <span className="grid h-12 w-12 place-items-center rounded-2xl bg-red-50 text-[#FF304F] dark:bg-red-500/10">
                   <CardIcon className="h-5 w-5" />
@@ -169,6 +169,24 @@ export function DashboardSectionPage({ section }: { section: SectionKey }) {
                   {card.meta}
                 </p>
               ) : null}
+            </>
+          );
+
+          if (card.plan) {
+            return (
+              <SubscribeButton
+                key={card.title}
+                plan={card.plan}
+                className="rounded-3xl border border-slate-200 bg-white p-6 text-left shadow-xl shadow-slate-900/5 transition hover:-translate-y-1 hover:border-[#FF304F]/50 hover:shadow-2xl hover:shadow-slate-900/10 focus:outline-none focus:ring-4 focus:ring-red-500/15 dark:border-white/10 dark:bg-white/5"
+              >
+                {content}
+              </SubscribeButton>
+            );
+          }
+
+          return (
+            <article key={card.title} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-xl shadow-slate-900/5 dark:border-white/10 dark:bg-white/5">
+              {content}
             </article>
           );
         })}

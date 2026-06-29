@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Award, BookOpen, CalendarClock, CreditCard, Heart, Home, Settings, ShoppingBag, Sparkles, Users, Video } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { SubscribeButton } from "./subscribe-provider";
 
 const menuItems = [
   { label: "Dashboard", href: "/dashboard", icon: Home },
@@ -70,9 +71,9 @@ export function DashboardSidebar() {
           <li>Sesi mentor group</li>
           <li>Sertifikat kelulusan</li>
         </ul>
-        <Link href="/dashboard/billing" className="mt-4 inline-flex h-10 w-full items-center justify-center rounded-xl bg-[#FF304F] px-4 text-sm font-bold text-white shadow-lg shadow-red-500/20">
+        <SubscribeButton className="mt-4 inline-flex h-10 w-full items-center justify-center rounded-xl bg-[#FF304F] px-4 text-sm font-bold text-white shadow-lg shadow-red-500/20 hover:bg-red-600">
           Upgrade Sekarang
-        </Link>
+        </SubscribeButton>
       </div>
     </aside>
   );

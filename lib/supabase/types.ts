@@ -8,20 +8,20 @@ export type Database = {
           id: string;
           full_name: string | null;
           avatar_url: string | null;
-          role: "student" | "teacher" | "admin" | "developer";
+          role: "student" | "teacher" | "instructor" | "admin" | "developer";
           created_at: string;
         };
         Insert: {
           id: string;
           full_name?: string | null;
           avatar_url?: string | null;
-          role?: "student" | "teacher" | "admin" | "developer";
+          role?: "student" | "teacher" | "instructor" | "admin" | "developer";
           created_at?: string;
         };
         Update: {
           full_name?: string | null;
           avatar_url?: string | null;
-          role?: "student" | "teacher" | "admin" | "developer";
+          role?: "student" | "teacher" | "instructor" | "admin" | "developer";
         };
         Relationships: [];
       };
@@ -312,7 +312,7 @@ export type Database = {
       };
     };
     Enums: {
-      user_role: "student" | "teacher" | "admin" | "developer";
+      user_role: "student" | "teacher" | "instructor" | "admin" | "developer";
       enrollment_status: "active" | "refunded" | "cancelled";
       order_status: "pending" | "paid" | "failed" | "expired" | "cancelled";
     };

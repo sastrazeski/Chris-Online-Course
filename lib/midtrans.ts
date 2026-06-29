@@ -3,6 +3,8 @@ import { absoluteUrl } from "./utils";
 
 const sandboxBase = "https://app.sandbox.midtrans.com/snap/v1/transactions";
 const productionBase = "https://app.midtrans.com/snap/v1/transactions";
+const sandboxSnapScript = "https://app.sandbox.midtrans.com/snap/snap.js";
+const productionSnapScript = "https://app.midtrans.com/snap/snap.js";
 
 export type SnapTransactionPayload = {
   transaction_details: {
@@ -49,13 +51,18 @@ export async function createSnapTransaction(payload: SnapTransactionPayload) {
   return response.json() as Promise<{ token: string; redirect_url: string }>;
 }
 
+export function getSnapScriptUrl() {
+  return process.env.MIDTRANS_IS_PRODUCTION === "true" ? productionSnapScript : sandboxSnapScript;
+}
+
 export function buildSnapPayload({
   orderId,
   amount,
   courseId,
   courseTitle,
   userEmail,
-  userName
+  userName,
+  finishPath = "/dashboard/my-learning"
 }: {
   orderId: string;
   amount: number;
@@ -63,6 +70,7 @@ export function buildSnapPayload({
   courseTitle: string;
   userEmail?: string;
   userName?: string;
+  finishPath?: string;
 }): SnapTransactionPayload {
   return {
     transaction_details: {
@@ -82,7 +90,7 @@ export function buildSnapPayload({
       }
     ],
     callbacks: {
-      finish: absoluteUrl("/dashboard")
+      finish: absoluteUrl(finishPath)
     }
   };
 }

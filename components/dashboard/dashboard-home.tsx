@@ -1,12 +1,12 @@
 "use client";
 
 import { Camera, GraduationCap, Lock, ShoppingCart } from "lucide-react";
-import { useState } from "react";
 import { DashboardCourseCard } from "./course-card";
 import { FeatureCard } from "./feature-card";
 import { MentorSessionCard } from "./mentor-session-card";
 import { ProgressCard } from "./progress-card";
-import { SubscribeModal } from "./subscribe-modal";
+import { useSubscribeModal } from "./subscribe-provider";
+import type { DashboardProgressStats } from "@/lib/dashboard-progress";
 
 const courses = [
   ["Digital Marketing Dasar untuk Pemula", "https://images.unsplash.com/photo-1551836022-d5d88e9218df?q=80&w=900&auto=format&fit=crop", "14:20", 12],
@@ -16,8 +16,14 @@ const courses = [
   ["TikTok Ads Mastery", "https://images.unsplash.com/photo-1611162616305-c69b3fa7fbe0?q=80&w=900&auto=format&fit=crop", "31:04", 0]
 ] as const;
 
-export function DashboardHome({ displayName }: { displayName: string }) {
-  const [isSubscribeOpen, setIsSubscribeOpen] = useState(false);
+export function DashboardHome({
+  displayName,
+  progressStats
+}: {
+  displayName: string;
+  progressStats: DashboardProgressStats;
+}) {
+  const { openSubscribe } = useSubscribeModal();
   const firstName = displayName.split(" ")[0] || "Sastra";
 
   return (
@@ -58,7 +64,7 @@ export function DashboardHome({ displayName }: { displayName: string }) {
             />
           </div>
         </div>
-        <ProgressCard />
+        <ProgressCard stats={progressStats} />
       </section>
 
       <section id="learning">
@@ -76,7 +82,7 @@ export function DashboardHome({ displayName }: { displayName: string }) {
               image={image}
               duration={duration}
               progress={progress}
-              onLockedClick={() => setIsSubscribeOpen(true)}
+              onLockedClick={() => openSubscribe()}
             />
           ))}
         </div>
@@ -107,8 +113,6 @@ export function DashboardHome({ displayName }: { displayName: string }) {
           <MentorSessionCard title="Content That Converts" mentor="@ranimala" schedule="26 Mei 2024 - 15:00 WIB" />
         </InfoPanel>
       </section>
-
-      <SubscribeModal isOpen={isSubscribeOpen} onClose={() => setIsSubscribeOpen(false)} />
     </div>
   );
 }

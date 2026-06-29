@@ -1,6 +1,6 @@
 create extension if not exists "pgcrypto";
 
-create type public.user_role as enum ('student', 'teacher', 'admin', 'developer');
+create type public.user_role as enum ('student', 'teacher', 'instructor', 'admin', 'developer');
 create type public.enrollment_status as enum ('active', 'refunded', 'cancelled');
 create type public.order_status as enum ('pending', 'paid', 'failed', 'expired', 'cancelled');
 

@@ -11,5 +11,9 @@ export function getSupabasePublicKey() {
 }
 
 export function isMidtransConfigured() {
-  return Boolean(process.env.MIDTRANS_SERVER_KEY);
+  return Boolean(process.env.MIDTRANS_SERVER_KEY && getMidtransClientKey());
+}
+
+export function getMidtransClientKey() {
+  return process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || process.env.MIDTRANS_CLIENT_KEY;
 }

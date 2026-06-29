@@ -3,7 +3,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getSupabasePublicKey, getSupabaseUrl, isSupabaseConfigured } from "./lib/env";
 import type { Database } from "./lib/supabase/types";
 
-const protectedPrefixes = ["/dashboard", "/learn", "/admin", "/checkout", "/account", "/settings", "/developer"];
+const protectedPrefixes = ["/dashboard", "/teacher", "/learn", "/admin", "/checkout", "/account", "/settings", "/developer"];
 
 export async function middleware(request: NextRequest) {
   if (!isSupabaseConfigured()) {
@@ -43,7 +43,7 @@ export async function middleware(request: NextRequest) {
   const isProtectedRoute = protectedPrefixes.some((prefix) => request.nextUrl.pathname.startsWith(prefix));
   if (isProtectedRoute && !user) {
     const redirectUrl = request.nextUrl.clone();
-    redirectUrl.pathname = "/auth/sign-in";
+    redirectUrl.pathname = "/login";
     redirectUrl.searchParams.set("next", request.nextUrl.pathname);
     return NextResponse.redirect(redirectUrl);
   }
@@ -56,6 +56,27 @@ export async function middleware(request: NextRequest) {
     }
     redirectUrl.searchParams.set("message", "Verifikasi email dulu sebelum membuka halaman ini.");
     return NextResponse.redirect(redirectUrl);
+  }
+
+  if (user && (request.nextUrl.pathname === "/dashboard" || request.nextUrl.pathname.startsWith("/teacher/dashboard"))) {
+    const { data } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+    const profile = data as { role?: string } | null;
+    const role = profile?.role ?? "student";
+    const isTeacher = role === "teacher" || role === "instructor";
+
+    if (request.nextUrl.pathname === "/dashboard" && isTeacher) {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/teacher/dashboard";
+      redirectUrl.search = "";
+      return NextResponse.redirect(redirectUrl);
+    }
+
+    if (request.nextUrl.pathname.startsWith("/teacher/dashboard") && role === "student") {
+      const redirectUrl = request.nextUrl.clone();
+      redirectUrl.pathname = "/dashboard";
+      redirectUrl.search = "";
+      return NextResponse.redirect(redirectUrl);
+    }
   }
 
   return response;
